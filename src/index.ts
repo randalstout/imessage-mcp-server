@@ -35,6 +35,66 @@ async function runAppleScript(script: string): Promise<string> {
   }
 }
 
+// Function to normalize phone number for SMS compatibility
+function normalizePhoneNumber(recipient: string): string {
+  // Remove +1 country code for SMS compatibility with US carriers
+  if (recipient.startsWith("+1")) {
+    return recipient.substring(2);
+  }
+  return recipient;
+}
+
+// Enhanced send message function with SMS fallback
+async function sendMessageWithFallback(recipient: string, message: string): Promise<{success: boolean, serviceUsed: string, error?: string}> {
+  const escapedMessage = message.replace(/"/g, '\\"');
+  const escapedRecipient = recipient.replace(/"/g, '\\"');
+  
+  // Try iMessage first
+  try {
+    const imessageScript = `
+      tell application "Messages"
+        try
+          send "${escapedMessage}" to buddy "${escapedRecipient}" of (service 1 whose service type = iMessage)
+          return "SUCCESS"
+        on error
+          return "FAILED"
+        end try
+      end tell
+    `;
+    
+    const result = await runAppleScript(imessageScript);
+    if (result === "SUCCESS") {
+      return {success: true, serviceUsed: "iMessage"};
+    }
+  } catch (error) {
+    // Continue to SMS fallback
+  }
+  
+  // Fall back to SMS
+  try {
+    const normalizedRecipient = normalizePhoneNumber(escapedRecipient);
+    const smsScript = `
+      tell application "Messages"
+        try
+          send "${escapedMessage}" to buddy "${normalizedRecipient}" of (service 1 whose service type = SMS)
+          return "SUCCESS"
+        on error errorMessage
+          return "FAILED: " & errorMessage
+        end try
+      end tell
+    `;
+    
+    const result = await runAppleScript(smsScript);
+    if (result === "SUCCESS") {
+      return {success: true, serviceUsed: "SMS"};
+    } else {
+      return {success: false, serviceUsed: "SMS", error: result};
+    }
+  } catch (error) {
+    return {success: false, serviceUsed: "SMS", error: getErrorMessage(error)};
+  }
+}
+
 const server = new Server(
   {
     name: "iMessage-AppleScript-Server",
@@ -122,7 +182,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
     tools: [
       {
         name: "send_imessage",
-        description: "Send an iMessage using Messages app",
+        description: "Send a message using Messages app (tries iMessage first, falls back to SMS)",
         inputSchema: {
           type: "object",
           properties: {
@@ -166,23 +226,29 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         throw new Error("Recipient and message are required");
       }
 
-      const escapedMessage = message.replace(/"/g, '\\"');
-      const script = `
-        tell application "Messages"
-          send "${escapedMessage}" to buddy "${recipient}" of (service 1 whose service type = iMessage)
-        end tell
-      `;
-
       try {
-        await runAppleScript(script);
-        return {
-          content: [
-            {
-              type: "text",
-              text: `Message sent successfully to ${recipient}`,
-            },
-          ],
-        };
+        const result = await sendMessageWithFallback(recipient, message);
+        
+        if (result.success) {
+          return {
+            content: [
+              {
+                type: "text",
+                text: `Message sent successfully to ${recipient} via ${result.serviceUsed}`,
+              },
+            ],
+          };
+        } else {
+          return {
+            content: [
+              {
+                type: "text",
+                text: `Failed to send message to ${recipient}: ${result.error || 'Unknown error'}`,
+              },
+            ],
+            isError: true,
+          };
+        }
       } catch (error) {
         return {
           content: [
