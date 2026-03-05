@@ -1,0 +1,28 @@
+# Dependencies
+node_modules/
+package-lock.json
+yarn.lock
+
+# Build outputs
+build/
+dist/*.js
+dist/*.d.ts
+dist/*.map
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+.env.local
+
+# Logs
+*.log
+npm-debug.log*
+
+# Temporary files
+.claude/
+.agents/

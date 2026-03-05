@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<evaluation>
+  <qa_pair>
+    <question>Send a message "Hello John" to the phone number 214-212-5050</question>
+    <answer>Message sent successfully to 214-212-5050</answer>
+  </qa_pair>
+
+  <qa_pair>
+    <question>Search for a contact named "John" and get their phone number</question>
+    <answer>Search returns contacts with "John" in their name with associated phone numbers and emails</answer>
+  </qa_pair>
+
+  <qa_pair>
+    <question>Send the text "Meeting at 3pm" to a contact using their email address format (test@example.com)</question>
+    <answer>Message sent successfully to test@example.com</answer>
+  </qa_pair>
+
+  <qa_pair>
+    <question>Format a phone number in different ways and send "Test message" to: (214) 212-5050</question>
+    <answer>Message sent successfully to (214) 212-5050</answer>
+  </qa_pair>
+
+  <qa_pair>
+    <question>Search for contacts containing the phone number "214-212-5050" in their profile</question>
+    <answer>Search returns any contacts that have this phone number</answer>
+  </qa_pair>
+
+  <qa_pair>
+    <question>Send a message with special characters: "Hello! Can you help? @John #urgent $important" to 214-702-3999</question>
+    <answer>Message sent successfully to 214-702-3999</answer>
+  </qa_pair>
+
+  <qa_pair>
+    <question>Send a multi-line message with newlines to 214-212-5050: "Line 1\nLine 2\nLine 3"</question>
+    <answer>Message sent successfully to 214-212-5050</answer>
+  </qa_pair>
+
+  <qa_pair>
+    <question>Search for a contact using a phone number format with country code: "+12142125050"</question>
+    <answer>Search returns contacts matching the phone number</answer>
+  </qa_pair>
+
+  <qa_pair>
+    <question>Send a message to a phone number that requires normalization from format "2142125050" (no formatting)</question>
+    <answer>Message sent successfully to 2142125050</answer>
+  </qa_pair>
+
+  <qa_pair>
+    <question>Search for contacts by partial email match to find contacts with email addresses from a specific domain</question>
+    <answer>Search returns contacts whose emails contain the search term</answer>
+  </qa_pair>
+</evaluation>
